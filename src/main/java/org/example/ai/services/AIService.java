@@ -12,6 +12,8 @@ import org.example.ai.entities.IncidentTimelineResponse;
 import org.example.ai.utils.PromptBuilder;
 import org.springframework.stereotype.Service;
 
+import java.io.IOException;
+
 @Service
 public class AIService {
 
@@ -26,9 +28,14 @@ public class AIService {
 
     private <T> T askModel(String prompt, Class<T> clazz, String operation) {
         try {
-            String result = client.ask(prompt);
+            String result = cleanJsonResponse(client.ask(prompt));
+            // Check if the result is valid JSON
+            if (!isValidJson(result)) {
+                throw new RuntimeException("Model response is not valid JSON: " + result);
+            }
             return mapper.readValue(result, clazz);
         } catch (Exception e) {
+            System.err.println("Error occurred during " + operation + " with prompt: " + prompt);
             throw new RuntimeException("Failed to parse " + operation + " JSON", e);
         }
     }
@@ -95,6 +102,20 @@ public class AIService {
                 DevOpsChatResponse.class,
                 "devops chat"
         );
+    }
+
+    private boolean isValidJson(String str) {
+        try {
+            mapper.readTree(str); // Try to parse the string into a tree
+            return true;
+        } catch (IOException e) {
+            return false;
+        }
+    }
+    // Helper method to remove Markdown formatting
+    private String cleanJsonResponse(String response) {
+        // Remove Markdown block start (```json) and end (```)
+        return response.replaceAll("```json|```", "").trim();
     }
 
     public String analyzeLogsNarrative(String logs) {
