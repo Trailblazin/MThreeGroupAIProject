@@ -5,10 +5,11 @@ import org.example.ai.entities.AlertAnalysisResponse;
 import org.example.ai.entities.IncidentTimelineResponse;
 import org.example.ai.services.AIService;
 import org.springframework.http.MediaType;
-import org.springframework.web.bind.annotation.PostMapping;
-import org.springframework.web.bind.annotation.RequestBody;
-import org.springframework.web.bind.annotation.RequestMapping;
-import org.springframework.web.bind.annotation.RestController;
+import org.springframework.http.ResponseEntity;
+import org.springframework.web.bind.annotation.*;
+import org.springframework.web.multipart.MultipartFile;
+
+import java.io.IOException;
 
 @RestController
 @RequestMapping("/api/ai")
@@ -30,6 +31,18 @@ public class AIController {
     @PostMapping(value = "/analyze", consumes = MediaType.TEXT_PLAIN_VALUE)
     public AnalyzeLogResponse analyze(@RequestBody String logs) {
         return aiService.analyzeLogs(logs);
+    }
+
+    // MAIN LOG ANALYSIS - via file upload (multipart)
+    @PostMapping(value = "/analyze", consumes = MediaType.MULTIPART_FORM_DATA_VALUE)
+    public AnalyzeLogResponse analyzeFile(
+            @RequestParam("file") MultipartFile file) throws IOException {
+
+        // Store the file and get the file path
+        String filePath = aiService.storeFile(file);
+
+        // Use the file path or the file content to analyze
+        return aiService.analyzeFileLogs(filePath);
     }
 
     // MULTI-LEVEL LOG ANALYSIS (textual response)

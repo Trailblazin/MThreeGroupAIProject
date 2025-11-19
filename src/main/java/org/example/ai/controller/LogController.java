@@ -1,11 +1,11 @@
 package org.example.ai.controller;
 
 import org.example.ai.entities.LogEntry;
-import org.example.ai.services.LogService;
 import org.springframework.http.MediaType;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 import org.springframework.web.multipart.MultipartFile;
+import org.example.ai.services.LogService;
 
 import java.io.IOException;
 import java.nio.charset.StandardCharsets;
